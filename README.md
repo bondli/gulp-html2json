@@ -6,7 +6,8 @@ translate weex's component to json. this output json used for translate to react
     var gulpHtmlToJson = require('gulp-html2json');
 
     return gulp.src(sourceFiles)
-      .pipe(gulpCopy(outputPath, options));
+      .pipe(gulpHtmlToJson())
+      .pipe(gulp.dest(distDir));
 
 
 ## Releases
