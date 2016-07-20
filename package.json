@@ -1,0 +1,29 @@
+{
+    "name": "gulp-html2json",
+    "version": "0.0.1",
+    "description": "Plugin translate weex's component to json",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bondli/gulp-html2json"
+    },
+    "keywords": [
+        "gulpplugin", "html2json"
+    ],
+    "author": {
+        "name": "bndli",
+        "email": "250934756@qq.com",
+        "url": "https://github.com/bondli"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "jshint": "~2.4.1"
+    },
+    "dependencies": {
+        "gulp-util": "~2.2.9",
+        "through2": "2.0.1",
+        "himalaya": "latest",
+        "object-assign": "~4.0.1"
+    },
+    "homepage": "https://github.com/bondli/gulp-html2json"
+}
