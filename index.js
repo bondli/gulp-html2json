@@ -44,6 +44,7 @@ function parseFiles(fileContent) {
     //再次处理html
     var struct = {};
     var styles = {};
+    var scripts = {};
     for(var i in tmpJSON){
         if(tmpJSON[i].tagName == 'template'){ //处理结构
             struct = himalaya.parse(tmpJSON[i].content);
@@ -51,8 +52,11 @@ function parseFiles(fileContent) {
         else if(tmpJSON[i].tagName == 'style'){ //处理样式
             styles = parseStyle(tmpJSON[i].content);
         }
+        else if(tmpJSON[i].tagName == 'script'){ //处理数据
+            scripts = parseScript(tmpJSON[i].content);
+        }
     }
-    var outJSON = justifyJson(struct, styles);
+    var outJSON = justifyJson(struct, styles, scripts);
     return JSON.stringify(outJSON);
 }
 
@@ -62,7 +66,7 @@ function parseFiles(fileContent) {
  * @param  {[type]} styles [description]
  * @return {[type]}        [description]
  */
-function justifyJson(struct, styles){
+function justifyJson(struct, styles, scripts){
     var outJSON = {
         layout: [],
         models: {}
@@ -77,12 +81,11 @@ function justifyJson(struct, styles){
                 type : layoutMap[item.tagName] || 'struct',
                 name : item.attributes.dataset.role ? item.attributes.dataset.role : 'layout',
                 style : getStyle(item, styles),
-                children : parseComponent(item.children, styles)
+                children : parseComponent(item.children, styles, 'layout'+index)
             }
             outJSON.layout.push(outItem);
-            outJSON.models[outItem.id] = {
-                defalutValue : ''
-            }
+            //处理script标签中的值
+            outJSON.models[outItem.id] = scripts;
             index ++;
         }
     }
@@ -117,7 +120,7 @@ function parseStyle(styleStr){
  * @param  {[type]} coms [description]
  * @return {[type]}      [description]
  */
-function parseComponent(coms, styles){
+function parseComponent(coms, styles, layoutId){
     var outComs = [];
     //console.log(JSON.stringify(coms));
     var index = 1;
@@ -130,9 +133,7 @@ function parseComponent(coms, styles){
                 style: getStyle(item, styles)
             }
             if(item.tagName == 'a' || item.tagName == 'image' || item.tagName == 'text'){
-                newCom.props = {
-                    value : getValue(item)
-                };
+                newCom.ref = layoutId + '.' + getValue(item);
             }
             if(item.children && item.children.length){
                 var newComChildren = parseComponent(item.children, styles);
@@ -145,6 +146,20 @@ function parseComponent(coms, styles){
         }
     }
     return outComs;
+}
+
+/**
+ * 解析script
+ * @param  {[type]} scriptStr [description]
+ * @return {[type]}           [description]
+ */
+function parseScript(scriptStr){
+    //console.log('script:',scriptStr, typeof(scriptStr));
+    var scriptStr = scriptStr.replace('module.exports', '').replace('=', '');
+    scriptStr = trim(scriptStr);
+    eval('var obj=' + scriptStr);
+    //console.log(obj.data);
+    return obj.data;
 }
 
 /**
@@ -174,15 +189,16 @@ function getStyle(com, styles){
  */
 function getValue(com){
     if(com.tagName == 'image'){
-        return com.attributes.src;
+        return (com.attributes.src).replace('{{','').replace('}}','');
     }
     else if(com.tagName == 'a'){
-        return com.attributes.href;
+        return (com.attributes.href).replace('{{','').replace('}}','');
     }
     else if(com.tagName == 'text'){
-        return com.children[0].content;
+        return (com.children[0].content).replace('{{','').replace('}}','');
     }
 }
+
 
 /**
  * 入口函数
