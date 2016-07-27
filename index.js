@@ -18,6 +18,7 @@ var componentMap = {
     'a' : 'link',
     'image' : 'image',
     'text' : 'text',
+    'video' : 'video'
 };
 
 /**
@@ -120,7 +121,7 @@ function parseStyle(styleStr){
  * @param  {[type]} coms [description]
  * @return {[type]}      [description]
  */
-function parseComponent(coms, styles, layoutId){
+function parseComponent(coms, styles, layoutId, hasRepeat){
     var outComs = [];
     //console.log(JSON.stringify(coms));
     var index = 1;
@@ -132,11 +133,39 @@ function parseComponent(coms, styles, layoutId){
                 type: componentMap[item.tagName] || 'container',
                 style: getStyle(item, styles)
             }
-            if(item.tagName == 'a' || item.tagName == 'image' || item.tagName == 'text'){
-                newCom.ref = layoutId + '.' + getValue(item);
+            //增加对'repeat'属性的支持
+            if(item.attributes.repeat){
+                newCom.repeat = getRepeat(item.attributes.repeat, layoutId);
+                hasRepeat = true;
             }
+            else {
+                if(item.tagName == 'a' || item.tagName == 'image' || item.tagName == 'video' || item.tagName == 'text'){
+                    if(hasRepeat){
+                        if(isStaticValue(item)){
+                            newCom.repeatItem = {
+                                value: getValue(item)
+                            };
+                        }
+                        else {
+                            newCom.repeatItem = getValue(item);
+                        }
+                    }
+                    else {
+                        if(isStaticValue(item)){
+                            newCom.props = {
+                                value: getValue(item)
+                            };
+                        }
+                        else {
+                            newCom.ref = layoutId + '.' + getValue(item);
+                        }
+                    }
+                }
+            }
+
             if(item.children && item.children.length){
-                var newComChildren = parseComponent(item.children, styles);
+                //var isRepeat = newCom.repeat ? true : false;
+                var newComChildren = parseComponent(item.children, styles, layoutId, hasRepeat);
                 if(newComChildren.length){
                     newCom.children = newComChildren;
                 }
@@ -182,21 +211,44 @@ function getStyle(com, styles){
     }
 }
 
+function isStaticValue(com) {
+    var value = '';
+    if(com.tagName == 'image' || com.tagName == 'video'){
+        value = (com.attributes.src);
+    }
+    else if(com.tagName == 'a'){
+        value = (com.attributes.href);
+    }
+    else if(com.tagName == 'text'){
+        value = (com.children[0].content);
+    }
+    if(value.indexOf('{{')> -1){
+        return false;
+    }
+    return true;
+}
+
 /**
  * 获取组件的值
  * @param  {[type]} com [description]
  * @return {[type]}     [description]
  */
 function getValue(com){
-    if(com.tagName == 'image'){
-        return (com.attributes.src).replace('{{','').replace('}}','');
+    var value = '';
+    if(com.tagName == 'image' || com.tagName == 'video'){
+        value = (com.attributes.src);
     }
     else if(com.tagName == 'a'){
-        return (com.attributes.href).replace('{{','').replace('}}','');
+        value = (com.attributes.href);
     }
     else if(com.tagName == 'text'){
-        return (com.children[0].content).replace('{{','').replace('}}','');
+        value = (com.children[0].content);
     }
+    return value.replace('{{','').replace('}}','');
+}
+
+function getRepeat(repeat, layoutId){
+    return layoutId + '.' + repeat.replace('{{', '').replace('}}','');
 }
 
 
