@@ -26,3 +26,6 @@ translate weex's component to json. this output json used for translate to react
 
 ### 0.0.5
 * 支持editor属性定义的获取
+
+### 0.0.6
+* 支持defaultData属性定义的获取

@@ -1,6 +1,6 @@
 {
     "name": "gulp-html2json",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "Plugin translate weex's component to json",
     "main": "index.js",
     "repository": {

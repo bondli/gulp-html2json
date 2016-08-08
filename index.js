@@ -46,7 +46,7 @@ function parseFiles(fileContent) {
     var struct = {};
     var styles = {};
     var scripts = {};
-    var editor = {};
+    var editorAndDefault = {};
     var s = 0;
 
     for(var i in tmpJSON){
@@ -58,7 +58,7 @@ function parseFiles(fileContent) {
         }
         else if(tmpJSON[i].tagName == 'script'){ //处理数据
             if(s != 0){
-                editor = parseScript(tmpJSON[i].content, true);
+                editorAndDefault = parseScript(tmpJSON[i].content, true);
             }
             else {
                 scripts = parseScript(tmpJSON[i].content);
@@ -66,7 +66,7 @@ function parseFiles(fileContent) {
             }
         }
     }
-    var outJSON = justifyJson(struct, styles, scripts, editor);
+    var outJSON = justifyJson(struct, styles, scripts, editorAndDefault);
     return JSON.stringify(outJSON);
 }
 
@@ -76,11 +76,12 @@ function parseFiles(fileContent) {
  * @param  {[type]} styles [description]
  * @return {[type]}        [description]
  */
-function justifyJson(struct, styles, scripts, editor){
+function justifyJson(struct, styles, scripts, editorAndDefault){
     var outJSON = {
         layout: [],
         models: {},
-        editor: editor
+        editor: editorAndDefault.editor || [],
+        defaultData: editorAndDefault.defaultData || {}
     };
     var index = 1;
     for(var i in struct){
@@ -195,11 +196,11 @@ function parseComponent(coms, styles, layoutId, hasRepeat){
 function parseScript(scriptStr, isParseEditor){
     //console.log('script:',scriptStr, typeof(scriptStr));
     if(isParseEditor === true){
-        var scriptStr = scriptStr.replace('var editConfig', '').replace('=', '');
-        scriptStr = trim(scriptStr);
-        eval('var editor=' + scriptStr);
-        //console.log(editor, editor.length, editor[0]);
-        return editor;
+        eval(scriptStr);
+        return {
+            defaultData: defaultData || {},
+            editor: editConfig || []
+        };
     }
     else {
         var scriptStr = scriptStr.replace('module.exports', '').replace('=', '');
