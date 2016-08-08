@@ -23,3 +23,6 @@ translate weex's component to json. this output json used for translate to react
 
 ### 0.0.4
 * 支持设置组件的值和repeat属性
+
+### 0.0.5
+* 支持editor属性定义的获取

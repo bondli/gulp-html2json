@@ -46,6 +46,9 @@ function parseFiles(fileContent) {
     var struct = {};
     var styles = {};
     var scripts = {};
+    var editor = {};
+    var s = 0;
+
     for(var i in tmpJSON){
         if(tmpJSON[i].tagName == 'template'){ //处理结构
             struct = himalaya.parse(tmpJSON[i].content);
@@ -54,10 +57,16 @@ function parseFiles(fileContent) {
             styles = parseStyle(tmpJSON[i].content);
         }
         else if(tmpJSON[i].tagName == 'script'){ //处理数据
-            scripts = parseScript(tmpJSON[i].content);
+            if(s != 0){
+                editor = parseScript(tmpJSON[i].content, true);
+            }
+            else {
+                scripts = parseScript(tmpJSON[i].content);
+                s ++ ;
+            }
         }
     }
-    var outJSON = justifyJson(struct, styles, scripts);
+    var outJSON = justifyJson(struct, styles, scripts, editor);
     return JSON.stringify(outJSON);
 }
 
@@ -67,10 +76,11 @@ function parseFiles(fileContent) {
  * @param  {[type]} styles [description]
  * @return {[type]}        [description]
  */
-function justifyJson(struct, styles, scripts){
+function justifyJson(struct, styles, scripts, editor){
     var outJSON = {
         layout: [],
-        models: {}
+        models: {},
+        editor: editor
     };
     var index = 1;
     for(var i in struct){
@@ -182,13 +192,22 @@ function parseComponent(coms, styles, layoutId, hasRepeat){
  * @param  {[type]} scriptStr [description]
  * @return {[type]}           [description]
  */
-function parseScript(scriptStr){
+function parseScript(scriptStr, isParseEditor){
     //console.log('script:',scriptStr, typeof(scriptStr));
-    var scriptStr = scriptStr.replace('module.exports', '').replace('=', '');
-    scriptStr = trim(scriptStr);
-    eval('var obj=' + scriptStr);
-    //console.log(obj.data);
-    return obj.data;
+    if(isParseEditor === true){
+        var scriptStr = scriptStr.replace('var editConfig', '').replace('=', '');
+        scriptStr = trim(scriptStr);
+        eval('var editor=' + scriptStr);
+        //console.log(editor, editor.length, editor[0]);
+        return editor;
+    }
+    else {
+        var scriptStr = scriptStr.replace('module.exports', '').replace('=', '');
+        scriptStr = trim(scriptStr);
+        eval('var obj=' + scriptStr);
+        //console.log(obj.data);
+        return obj.data;
+    }
 }
 
 /**
