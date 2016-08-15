@@ -15,6 +15,7 @@ var layoutMap = {
 var componentMap = {
     'div' : 'container',
     'scroller' : 'container',
+    'slider' : 'container',
     'a' : 'link',
     'image' : 'image',
     'text' : 'text',
@@ -90,9 +91,13 @@ function justifyJson(struct, styles, scripts, defaultData){
             outItem = {
                 id : 'layout' + index,
                 type : layoutMap[item.tagName] || 'struct',
-                name : item.attributes.dataset.role ? item.attributes.dataset.role : 'layout',
+                name : item.attributes.dataset.role ? item.attributes.dataset.role : 'unknown',
                 style : getStyle(item, styles),
                 children : parseComponent(item.children, styles, 'layout'+index)
+            }
+            //处理禁止编辑
+            if(item.attributes.disabledEditor){
+                outItem.disabledEditor = true;
             }
             outJSON.layout.push(outItem);
             //处理script标签中的值
@@ -142,6 +147,10 @@ function parseComponent(coms, styles, layoutId, hasRepeat){
                 id: item.tagName + index,
                 type: componentMap[item.tagName] || 'container',
                 style: getStyle(item, styles)
+            }
+            //增加对'if'属性的支持
+            if(item.attributes.if){
+                newCom.condition = item.attributes.if;
             }
             //增加对'repeat'属性的支持
             if(item.attributes.repeat){

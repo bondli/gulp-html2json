@@ -32,3 +32,7 @@ translate weex's component to json. this output json used for translate to react
 
 ### 0.0.7
 * editor属性回退，只支持defaultData属性定义的获取
+
+### 0.0.8
+* 支持if属性，用于控制是否渲染和显示
+* layout上禁止编辑属性disabledEditor的支持
