@@ -150,7 +150,7 @@ function parseComponent(coms, styles, layoutId, hasRepeat){
             }
             //增加对'if'属性的支持
             if(item.attributes.if){
-                newCom.condition = item.attributes.if;
+                newCom.condition = (item.attributes.if).replace('{{', '').replace('}}', '');
             }
             //增加对'repeat'属性的支持
             if(item.attributes.repeat){
